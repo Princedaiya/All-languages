@@ -1,0 +1,178 @@
+ <!DOCTYPE html>  
+    <html lang="en">  
+    <head>  
+        <meta charset="UTF-8">  
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+        <title>Advanced Code Runner </title>  
+        <script src="https://cdn.tailwindcss.com"></script>  
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" />  
+        <style>  
+            body {  
+                font-family: 'Arial', sans-serif;  
+                background: linear-gradient(270deg, #ff7e5f, #feb47b, #86a8e7, #91eae4);  
+                background-size: 400% 400%;  
+                animation: gradientAnimation 15s ease infinite;  
+                overflow: hidden;  
+            }  
+            @keyframes gradientAnimation {  
+                0% { background-position: 0% 50%; }  
+                50% { background-position: 100% 50%; }  
+                100% { background-position: 0% 50%; }  
+            }  
+            .button-animation {  
+                transition: transform 0.2s, background-color 0.3s, box-shadow 0.3s;  
+            }  
+            .button-animation:hover {  
+                transform: scale(1.1);  
+                background-color: rgba(255, 255, 255, 0.2);  
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  
+            }  
+            .hidden {  
+                display: none;  
+            }  
+            .fade-in {  
+                animation: fadeIn 0.5s ease-in-out;  
+            }  
+            @keyframes fadeIn {  
+                from { opacity: 0; }  
+                to { opacity: 1; }  
+            }  
+            .output-frame {  
+                border: 2px solid #4a5568;  
+                border-radius: 8px;  
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);  
+                padding: 10px;  
+                background-color: #ffffff;  
+            }  
+            .output-title {  
+                font-weight: bold;  
+                margin-bottom: 5px;  
+            }  
+            .language-button {  
+                display: flex;  
+                flex-direction: column;  
+                align-items: center;  
+                justify-content: center;  
+                padding: 15px;  
+                border-radius: 12px;  
+                margin: 10px;  
+                color: white;  
+                transition: transform 0.2s, background-color 0.3s;  
+                width: 100px;  
+                height: 100px;  
+                position: relative;  
+            }  
+            .language-icon {  
+                width: 100px;  
+                height: 100px;  
+                margin-bottom: 5px;  
+            }  
+            .html-button {  
+                background-color: #e44d26;  
+            }  
+            .css-button {  
+                background-color: #264de4;  
+            }  
+            .js-button {  
+                background-color: #f7df1e;  
+            }  
+            .code-input {  
+                height: 150px;  
+                padding: 10px;  
+                border: 1px solid #ccc;  
+                border-radius: 5px;  
+                width: 100%;  
+                font-family: 'Courier New', Courier, monospace;  
+                resize: none;  
+            }  
+        </style>  
+    </head>  
+    <body class="flex flex-col items-center justify-center h-screen">  
+        <h1 class="text-4xl font-bold text-white mb-6 animate-bounce">Select a Language</h1>  
+        <div id="languageMenu" class="flex flex-wrap justify-center mb-4">  
+            <button class="language-button html-button button-animation" onclick="showCodeRunner('html')">  
+                <img src="https://media.licdn.com/dms/image/D5612AQFlnCbumA3zTQ/article-cover_image-shrink_600_2000/0/1706945877644?e=2147483647&v=beta&t=n_jO4MJvRat6H50LbOSNhh-iwI5ZPvp9pc_7DLCxIO4" alt="HTML" class="language-icon"> HTML  
+            </button>  
+            <button class="language-button css-button button-animation" onclick="showCodeRunner('css')">  
+                <img src="https://delta-dev-software.fr/wp-content/uploads/2024/05/CSS-Logo.png" alt="CSS" class="language-icon"> CSS  
+            </button>  
+            <button class="language-button js-button button-animation" onclick="showCodeRunner('js')">  
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvuLWERwi90PN2IoCWdskisemYu8k1R1CxtA&s" alt="JavaScript" class="language-icon"> JavaScript  
+            </button>  
+        </div>  
+
+        <div id="codeRunner" class="hidden fade-in w-3/4 bg-white rounded-lg shadow-lg p-4">  
+            <h2 class="text-lg font-semibold">Code:</h2>  
+            <textarea id="codeInput" class="code-input" placeholder="Enter your code here..."></textarea>  
+            <div class="flex justify-between mt-4">  
+                <button id="runButton" class="p-2 bg-purple-500 text-white rounded-lg button-animation hover:bg-purple-600">Run Code</button>  
+                <button id="clearButton" class="p-2 bg-red-500 text-white rounded-lg button-animation hover:bg-red-600" onclick="clearCode()">Clear</button>  
+            </div>  
+            <h2 class="mt-4 text-lg font-semibold">Output:</h2>  
+            <div class="output-frame">  
+                <div class="output-title">Output:</div>  
+                <iframe id="output" class="mt-2 w-full h-60 border border-gray-300 rounded"></iframe>  
+            </div>  
+        </div>  
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>  
+        <script>  
+            function showCodeRunner(language) {  
+                document.getElementById('languageMenu').classList.add('hidden');  
+                const codeRunner = document.getElementById('codeRunner');  
+                codeRunner.classList.remove('hidden');  
+                codeRunner.classList.add('fade-in');  
+
+                const runButton = document.getElementById('runButton');  
+                runButton.onclick = () => runCode(language);  
+            }  
+
+            function runCode(language) {  
+                const code = document.getElementById('codeInput').value;  
+                const outputFrame = document.getElementById('output');  
+                const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;  
+
+                outputDocument.open();  
+                if (language === 'html') {  
+                    outputDocument.write(`  
+                        <html>  
+                        <body>  
+                            ${code}  
+                        </body>  
+                        </html>  
+                    `);  
+                } else if (language === 'css') {  
+                    outputDocument.write(`  
+                        <html>  
+                        <head>  
+                            <style>${code}</style>  
+                        </head>  
+                        <body>  
+                            <h1>CSS Output</h1>  
+                        </body>  
+                        </html>  
+                    `);  
+                } else if (language === 'js') {  
+                    outputDocument.write(`  
+                        <html>  
+                        <body>  
+                            <h1>JavaScript Output</h1>  
+                            <script>${code}<\/script>  
+                        </body>  
+                        </html>  
+                    `);  
+                }  
+                outputDocument.close();  
+            }  
+
+            function clearCode() {  
+                document.getElementById('codeInput').value = '';  
+                const outputFrame = document.getElementById('output');  
+                const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;  
+                outputDocument.open();  
+                outputDocument.write('<html><body></body></html>');  
+                outputDocument.close();  
+            }  
+        </script>  
+    </body>  
+    </html>  
